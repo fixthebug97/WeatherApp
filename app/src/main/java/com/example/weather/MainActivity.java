@@ -1,14 +1,18 @@
 package com.example.weather;
 
+import android.media.Image;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.squareup.picasso.Picasso;
 
 import org.w3c.dom.Text;
 
@@ -30,6 +34,9 @@ TextView switchText;
 EditText location;
 String BASE_URL="https://api.openweathermap.org";
 Switch aSwitch;
+ImageView icon;
+    String imageIcon="";
+    String description = "";
     int in;
     String newtemp;
 
@@ -44,6 +51,7 @@ Switch aSwitch;
         location=findViewById(R.id.Location);
         aSwitch=findViewById(R.id.switches);
         switchText=findViewById(R.id.switchText);
+        icon=findViewById(R.id.icon);
         getdata();
         myswitch();
     }
@@ -67,39 +75,50 @@ Switch aSwitch;
                         @Override
                         public void onResponse(Call<DATA> call, Response<DATA> response) {
                             String main = "";
-                            String description = "";
+
 
                             //Toast.makeText(MainActivity.this, "response code" + response.toString(), Toast.LENGTH_SHORT).show();
-                            String temperature = response.body().getCoord().getTemp();
-                            double db=Double.parseDouble(temperature);
-                            in=(int)Math.round(db);
-                            newtemp=String.valueOf(in);
 
-                            String name=response.body().getName();
-                            ArrayList<Weather> weather = response.body().getWeather();
-                            for (int i = 0; i < weather.size(); i++) {
 
-                                main = response.body().getWeather().get(i).getMain();
-                                description = response.body().getWeather().get(i).getDescription();
+
+
+                                ArrayList<Weather> weather = response.body().getWeather();
+                                for (int i = 0; i < weather.size(); i++) {
+
+                                    main = response.body().getWeather().get(i).getMain();
+                                    description = response.body().getWeather().get(i).getDescription();
+                                    imageIcon = response.body().getWeather().get(i).getIcon();
+
+
+                                }
+
+                          //  Toast.makeText(MainActivity.this, ""+imageIcon, Toast.LENGTH_SHORT).show();
+                                String name = response.body().getName();
+                                String temperature = response.body().getCoord().getTemp();
+                                double db = Double.parseDouble(temperature);
+                                in = (int) Math.round(db);
+                                newtemp = String.valueOf(in);
+                                String newpath = "http://openweathermap.org/img/w/" + imageIcon + ".png";
+
+
+                                Picasso.with(MainActivity.this).load(newpath).resize(250, 250).into(icon);
+                                cityname.setText(name);
+                                desc.setText(description);
+                                aSwitch.setVisibility(View.VISIBLE);
+                                switchText.setVisibility(View.VISIBLE);
+
+
+                                if (aSwitch.isChecked()) {
+
+                                    convert();
+                                } else {
+                                    temp.setText(newtemp + "\u00b0");
+                                }
+
+                                location.setText("");
 
 
                             }
-                            cityname.setText(name);
-                            desc.setText(description);
-                            aSwitch.setVisibility(View.VISIBLE);
-                            switchText.setVisibility(View.VISIBLE);
-                            if(aSwitch.isChecked()){
-
-                                convert();
-                            }
-                            else{
-                                temp.setText(newtemp+"\u00b0");
-                            }
-
-                            location.setText("");
-
-
-                        }
 
                         @Override
                         public void onFailure(Call<DATA> call, Throwable t) {
@@ -125,14 +144,14 @@ Switch aSwitch;
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 if(compoundButton.isChecked()){
-                    switchText.setText("F\u00b0");
+                    switchText.setText("\u00b0F");
                     convert();
                    // 20°C × 9/5 + 32 = 68 °F
                 }
 
                 else{
 
-                    switchText.setText("C\u00b0");
+                    switchText.setText("\u00b0C");
                     temp.setText(newtemp+"\u00b0");
                 }
             }
